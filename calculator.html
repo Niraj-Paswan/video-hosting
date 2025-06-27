@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIP Calculator</title>
+    <link rel="stylesheet" href="./src/output.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "groww-green": "#00D09C",
+              "groww-blue": "#5367FF",
+              "groww-gray": "#44475B",
+              "groww-light": "#F8F9FA",
+            },
+            fontFamily: {
+              inter: ["Inter", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-white font-inter">
+    <div class="min-h-screen py-8 px-4">
+      <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+          <h1 class="text-3xl font-semibold text-groww-gray mb-3">
+            SIP Calculator
+          </h1>
+          <p class="text-gray-500 text-lg">
+            Calculate your Systematic Investment Plan returns
+          </p>
+        </div>
+
+        <!-- Main Calculator Card -->
+        <div
+          class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+        >
+          <div class="grid lg:grid-cols-5 min-h-[600px]">
+            <!-- Left Panel - Inputs -->
+            <div class="lg:col-span-2 p-8 border-r border-gray-100">
+              <div class="space-y-10">
+                <!-- Monthly Investment -->
+                <div>
+                  <div class="flex justify-between items-center mb-6">
+                    <label class="text-groww-gray font-medium"
+                      >Monthly investment</label
+                    >
+                    <div
+                      class="flex items-center bg-gray-50 rounded-lg px-3 py-2"
+                    >
+                      <span class="text-gray-400 text-sm mr-1">₹</span>
+                      <input
+                        type="text"
+                        id="monthlyAmount"
+                        value="25000"
+                        class="bg-transparent text-right font-semibold text-lg text-groww-gray border-none outline-none w-20"
+                      />
+                    </div>
+                  </div>
+                  <div class="relative mb-2">
+                    <input
+                      type="range"
+                      id="monthlyRange"
+                      min="500"
+                      max="100000"
+                      value="25000"
+                      step="500"
+                      class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-custom"
+                    />
+                  </div>
+                  <div class="flex justify-between text-xs text-gray-400">
+                    <span>₹500</span>
+                    <span>₹1L</span>
+                  </div>
+                </div>
+
+                <!-- Expected Return Rate -->
+                <div>
+                  <div class="flex justify-between items-center mb-6">
+                    <label class="text-groww-gray font-medium"
+                      >Expected return rate (p.a)</label
+                    >
+                    <div
+                      class="flex items-center bg-gray-50 rounded-lg px-3 py-2"
+                    >
+                      <input
+                        type="text"
+                        id="returnRate"
+                        value="12"
+                        class="bg-transparent text-right font-semibold text-lg text-groww-gray border-none outline-none w-8"
+                      />
+                      <span class="text-gray-400 text-sm ml-1">%</span>
+                    </div>
+                  </div>
+                  <div class="relative mb-2">
+                    <input
+                      type="range"
+                      id="returnRange"
+                      min="1"
+                      max="30"
+                      value="12"
+                      step="0.5"
+                      class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-custom"
+                    />
+                  </div>
+                  <div class="flex justify-between text-xs text-gray-400">
+                    <span>1%</span>
+                    <span>30%</span>
+                  </div>
+                </div>
+
+                <!-- Time Period -->
+                <div>
+                  <div class="flex justify-between items-center mb-6">
+                    <label class="text-groww-gray font-medium"
+                      >Time period</label
+                    >
+                    <div
+                      class="flex items-center bg-gray-50 rounded-lg px-3 py-2"
+                    >
+                      <input
+                        type="text"
+                        id="timePeriod"
+                        value="10"
+                        class="bg-transparent text-right font-semibold text-lg text-groww-gray border-none outline-none w-8"
+                      />
+                      <span class="text-gray-400 text-sm ml-1">Y</span>
+                    </div>
+                  </div>
+                  <div class="relative mb-2">
+                    <input
+                      type="range"
+                      id="timeRange"
+                      min="1"
+                      max="40"
+                      value="10"
+                      step="1"
+                      class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-custom"
+                    />
+                  </div>
+                  <div class="flex justify-between text-xs text-gray-400">
+                    <span>1Y</span>
+                    <span>40Y</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Panel - Results -->
+            <div class="lg:col-span-3 p-8">
+              <div class="h-full flex flex-col">
+                <!-- Chart Section -->
+                <div class="flex-1 flex items-center justify-center mb-8">
+                  <div class="relative">
+                    <canvas id="sipChart" width="280" height="280"></canvas>
+                    <div
+                      class="absolute inset-0 flex items-center justify-center"
+                    >
+                      <div class="text-center">
+                        <div
+                          class="text-xs text-gray-400 mb-2 flex items-center justify-center"
+                        >
+                          <span
+                            class="w-2 h-2 bg-gray-300 rounded-full mr-2"
+                          ></span>
+                          Invested amount
+                        </div>
+                        <div
+                          class="text-xs text-gray-400 flex items-center justify-center"
+                        >
+                          <span
+                            class="w-2 h-2 bg-primary rounded-full mr-2"
+                          ></span>
+                          Est. returns
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Results Display -->
+                <div class="space-y-4">
+                  <div
+                    class="flex justify-between items-center py-4 border-b border-gray-100"
+                  >
+                    <span class="text-gray-500 font-medium"
+                      >Invested amount</span
+                    >
+                    <span
+                      class="font-semibold text-xl text-groww-gray"
+                      id="investedAmount"
+                      >₹30,00,000</span
+                    >
+                  </div>
+                  <div
+                    class="flex justify-between items-center py-4 border-b border-gray-100"
+                  >
+                    <span class="text-gray-500 font-medium">Est. returns</span>
+                    <span
+                      class="font-semibold text-xl text-groww-gray"
+                      id="estReturns"
+                      >₹25,00,897</span
+                    >
+                  </div>
+                  <div
+                    class="flex justify-between items-center py-4 border-b border-gray-100"
+                  >
+                    <span class="text-gray-500 font-medium">Total value</span>
+                    <span
+                      class="font-semibold text-2xl text-groww-gray"
+                      id="totalValue"
+                      >₹55,00,897</span
+                    >
+                  </div>
+
+                  <!-- CTA Button -->
+                  <div class="pt-6">
+                    <button
+                      class="w-full bg-primary text-white py-4 rounded-lg font-semibold text-lg hover:bg-primary/90 transition-all duration-200 cursor-pointer"
+                    >
+                      INVEST NOW
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Info Cards -->
+        <div class="grid md:grid-cols-3 gap-6 mt-8">
+          <div
+            class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center"
+          >
+            <div
+              class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-6 h-6 text-groww-blue"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            </div>
+            <h3 class="font-semibold text-groww-gray mb-2">
+              Power of Compounding
+            </h3>
+            <p class="text-sm text-gray-500">
+              Your money grows exponentially over time through compound interest
+            </p>
+          </div>
+
+          <div
+            class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center"
+          >
+            <div
+              class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-6 h-6 text-groww-green"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h3 class="font-semibold text-groww-gray mb-2">
+              Disciplined Investing
+            </h3>
+            <p class="text-sm text-gray-500">
+              Regular investments help build a disciplined approach to wealth
+              creation
+            </p>
+          </div>
+
+          <div
+            class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center"
+          >
+            <div
+              class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-6 h-6 text-purple-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
+                />
+              </svg>
+            </div>
+            <h3 class="font-semibold text-groww-gray mb-2">
+              Rupee Cost Averaging
+            </h3>
+            <p class="text-sm text-gray-500">
+              Reduces the impact of market volatility on your investments
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .slider-custom::-webkit-slider-thumb {
+        appearance: none;
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: #00d09c;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 208, 156, 0.3);
+        transition: all 0.2s ease;
+      }
+
+      .slider-custom::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 208, 156, 0.4);
+      }
+
+      .slider-custom::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: #00d09c;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 208, 156, 0.3);
+      }
+
+      .slider-custom::-webkit-slider-track {
+        background: linear-gradient(
+          to right,
+          #00d09c 0%,
+          #00d09c var(--progress, 25%),
+          #e5e7eb var(--progress, 25%),
+          #e5e7eb 100%
+        );
+        height: 4px;
+        border-radius: 2px;
+      }
+
+      .slider-custom::-moz-range-track {
+        background: #00d09c;
+        height: 4px;
+        border-radius: 2px;
+      }
+
+      .slider-custom:focus {
+        outline: none;
+      }
+
+      .slider-custom:focus::-webkit-slider-thumb {
+        box-shadow: 0 0 0 3px rgba(0, 208, 156, 0.1),
+          0 2px 8px rgba(0, 208, 156, 0.3);
+      }
+
+      input[type="text"]:focus {
+        outline: none;
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+    </style>
+
+    <script>
+      let sipChart;
+
+      // Initialize chart with Groww-like styling
+      function initChart() {
+        const ctx = document.getElementById("sipChart").getContext("2d");
+        sipChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            datasets: [
+              {
+                data: [30, 25],
+                backgroundColor: ["#E5E7EB", "#5367FF"],
+                borderWidth: 0,
+                cutout: "75%",
+              },
+            ],
+          },
+          options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                enabled: false,
+              },
+            },
+            animation: {
+              animateRotate: true,
+              duration: 800,
+              easing: "easeOutCubic",
+            },
+          },
+        });
+      }
+
+      // Format currency in Indian format
+      function formatCurrency(amount) {
+        if (amount >= 10000000) {
+          // 1 crore
+          return `₹${(amount / 10000000).toFixed(2)} Cr`;
+        } else if (amount >= 100000) {
+          // 1 lakh
+          return `₹${(amount / 100000).toFixed(2)} L`;
+        } else {
+          return new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            maximumFractionDigits: 0,
+          }).format(amount);
+        }
+      }
+
+      // Format number with commas
+      function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
+      // Calculate SIP with proper formula
+      function calculateSIP() {
+        const monthlyAmount =
+          parseFloat(
+            document.getElementById("monthlyAmount").value.replace(/,/g, "")
+          ) || 0;
+        const returnRate =
+          parseFloat(document.getElementById("returnRate").value) || 0;
+        const timePeriod =
+          parseFloat(document.getElementById("timePeriod").value) || 0;
+
+        if (monthlyAmount <= 0 || returnRate <= 0 || timePeriod <= 0) return;
+
+        const monthlyRate = returnRate / 100 / 12;
+        const totalMonths = timePeriod * 12;
+
+        // SIP Future Value Formula: M = P × ({[1 + i]^n - 1} / i) × (1 + i)
+        const futureValue =
+          monthlyAmount *
+          (((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) *
+            (1 + monthlyRate));
+        const investedAmount = monthlyAmount * totalMonths;
+        const estimatedReturns = futureValue - investedAmount;
+
+        // Update display with smooth animation
+        animateValue("investedAmount", investedAmount);
+        animateValue("estReturns", estimatedReturns);
+        animateValue("totalValue", futureValue);
+
+        // Update chart
+        if (sipChart) {
+          const investedRatio =
+            (investedAmount / (investedAmount + estimatedReturns)) * 100;
+          const returnsRatio =
+            (estimatedReturns / (investedAmount + estimatedReturns)) * 100;
+
+          sipChart.data.datasets[0].data = [investedRatio, returnsRatio];
+          sipChart.update("active");
+        }
+
+        // Update slider progress
+        updateSliderProgress();
+      }
+
+      // Animate value changes
+      function animateValue(elementId, targetValue) {
+        const element = document.getElementById(elementId);
+        const startValue =
+          parseFloat(element.textContent.replace(/[₹,LCr]/g, "")) || 0;
+        const duration = 600;
+        const startTime = performance.now();
+
+        function updateValue(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+
+          // Smooth easing function
+          const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+          const currentValue =
+            startValue + (targetValue - startValue) * easeOutCubic;
+
+          element.textContent = formatCurrency(currentValue);
+
+          if (progress < 1) {
+            requestAnimationFrame(updateValue);
+          }
+        }
+
+        requestAnimationFrame(updateValue);
+      }
+
+      // Update slider visual progress
+      function updateSliderProgress() {
+        const sliders = document.querySelectorAll(".slider-custom");
+        sliders.forEach((slider) => {
+          const value =
+            ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+          slider.style.setProperty("--progress", value + "%");
+        });
+      }
+
+      // Setup input synchronization
+      function setupInputSync() {
+        const inputs = [
+          {
+            text: "monthlyAmount",
+            range: "monthlyRange",
+            formatter: formatNumber,
+          },
+          { text: "returnRate", range: "returnRange", formatter: null },
+          { text: "timePeriod", range: "timeRange", formatter: null },
+        ];
+
+        inputs.forEach(({ text, range, formatter }) => {
+          const textInput = document.getElementById(text);
+          const rangeInput = document.getElementById(range);
+
+          textInput.addEventListener("input", (e) => {
+            let value = e.target.value.replace(/,/g, "");
+            if (!isNaN(value) && value !== "") {
+              rangeInput.value = value;
+              if (formatter) {
+                e.target.value = formatter(value);
+              }
+              calculateSIP();
+            }
+          });
+
+          textInput.addEventListener("blur", (e) => {
+            let value = e.target.value.replace(/,/g, "");
+            if (!isNaN(value) && value !== "") {
+              if (formatter) {
+                e.target.value = formatter(value);
+              }
+            }
+          });
+
+          rangeInput.addEventListener("input", (e) => {
+            const value = e.target.value;
+            textInput.value = formatter ? formatter(value) : value;
+            calculateSIP();
+          });
+        });
+      }
+
+      // Initialize everything
+      document.addEventListener("DOMContentLoaded", function () {
+        initChart();
+        setupInputSync();
+        calculateSIP();
+        updateSliderProgress();
+
+        // Add smooth transitions to all interactive elements
+        document.querySelectorAll("input, button").forEach((el) => {
+          el.style.transition = "all 0.2s ease";
+        });
+      });
+    </script>
+  </body>
+</html>
